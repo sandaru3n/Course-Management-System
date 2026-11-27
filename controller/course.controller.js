@@ -19,14 +19,26 @@ export const CreateCourse = async (req, res) => {
 
     const existingCourse = await prisma.course.findFirst({
       where: {
-        code
-      }
+        code,
+      },
     });
 
-    const errors = {}
+    const errors = {};
+
+    if (!name) {
+      errors.name = "Course name is required";
+    }
+
+    if (!instructor) {
+      errors.instructor = "Instructor is required";
+    }
+
+    if (duration <= 0) {
+      errors.duration = "Invalid course duration";
+    }
 
     if (existingCourse && existingCourse.code === code) {
-      errors.code = "Course code already exists"
+      errors.code = "Course code already exists";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -34,7 +46,7 @@ export const CreateCourse = async (req, res) => {
         success: false,
         message: Object.values(errors).join(", "),
         errors,
-      })
+      });
     }
 
     await prisma.course.create({
@@ -45,16 +57,14 @@ export const CreateCourse = async (req, res) => {
         category,
         duration,
         status: status || "ACTIVE",
-      }
-    })
+      },
+    });
 
     return res.status(201).json({
       success: true,
       message: "Course created successfully",
-    })
-
+    });
   } catch (error) {
-
     if (error.code == "P2002") {
       return res.status(409).json({
         success: false,
@@ -70,7 +80,6 @@ export const CreateCourse = async (req, res) => {
   }
 };
 
-
 export const GetAllCourses = async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
@@ -82,13 +91,10 @@ export const GetAllCourses = async (req, res) => {
       message: "Courses fetched successfully",
       data: courses.map(formatCourse),
     });
-
   } catch (error) {
     ErrorHandler(error, req, res);
   }
-
 };
-
 
 export const GetCourseById = async (req, res) => {
   try {
@@ -100,9 +106,9 @@ export const GetCourseById = async (req, res) => {
 
     const course = await prisma.course.findFirst({
       where: {
-        id: parseInt(id)
-      }
-    })
+        id: parseInt(id),
+      },
+    });
 
     if (!course) {
       return res.status(404).json({
@@ -116,12 +122,10 @@ export const GetCourseById = async (req, res) => {
       message: "Course fetched successfully",
       data: formatCourse(course),
     });
-
   } catch (error) {
     ErrorHandler(error, req, res);
   }
 };
-
 
 export const UpdateCourse = async (req, res) => {
   try {
@@ -134,9 +138,9 @@ export const UpdateCourse = async (req, res) => {
 
     const exist = await prisma.course.findFirst({
       where: {
-        id: parseInt(id)
-      }
-    })
+        id: parseInt(id),
+      },
+    });
 
     if (!exist) {
       return res.status(404).json({
@@ -148,29 +152,29 @@ export const UpdateCourse = async (req, res) => {
     const existCourseCode = await prisma.course.findFirst({
       where: {
         code: code,
-        NOT: { id: parseInt(id) }
-      }
-    })
+        NOT: { id: parseInt(id) },
+      },
+    });
 
     if (existCourseCode) {
       return res.status(409).json({
         success: false,
         message: "Course code already exists",
-      })
+      });
     }
 
     const existCourseName = await prisma.course.findFirst({
       where: {
         name: name,
-        NOT: { id: parseInt(id) }
-      }
-    })
+        NOT: { id: parseInt(id) },
+      },
+    });
 
     if (existCourseName) {
       return res.status(409).json({
         success: false,
         message: "name already exists",
-      })
+      });
     }
 
     const updated = await prisma.course.update({
@@ -181,7 +185,7 @@ export const UpdateCourse = async (req, res) => {
         code,
         category,
         duration,
-        status: status || "ACTIVE"
+        status: status || "ACTIVE",
       },
     });
 
@@ -189,15 +193,11 @@ export const UpdateCourse = async (req, res) => {
       success: true,
       message: "Course updated successfully",
       data: formatCourse(updated),
-    })
-
+    });
   } catch (error) {
     ErrorHandler(error, req, res);
   }
 };
-
-
-
 
 export const DeleteCourse = async (req, res) => {
   try {
@@ -211,26 +211,26 @@ export const DeleteCourse = async (req, res) => {
 
     const exist = await prisma.course.findFirst({
       where: { id: courseId },
-    })
+    });
 
     if (!exist) {
       return res.status(404).json({
         success: false,
         message: "course id not found",
-      })
+      });
     }
 
     await prisma.course.delete({
       where: {
-        id: courseId
-      }
-    })
+        id: courseId,
+      },
+    });
 
     return res.status(200).json({
       success: true,
       message: "Course deleted successfully",
-    })
+    });
   } catch (error) {
-    ErrorHandler(error, req, res)
+    ErrorHandler(error, req, res);
   }
-}
+};

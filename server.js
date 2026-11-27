@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -49,9 +48,9 @@ const sanitize = (value) => {
 };
 
 app.use((req, res, next) => {
-  sanitize(req.body);
-  sanitize(req.query);
-  sanitize(req.params);
+  req.body = sanitize(req.body);
+  req.query = sanitize(req.query);
+  req.params = sanitize(req.params);
   next();
 });
 
